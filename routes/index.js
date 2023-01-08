@@ -9,7 +9,7 @@ let speaker = new SpeakerService();
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
-router.get("sound/pwm", pwmTest);
+router.get("/sound/pwm", pwmTest);
 router.get("/sound/:filename", playSound);
 
 
