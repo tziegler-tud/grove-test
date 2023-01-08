@@ -9,9 +9,9 @@ let speaker = new SpeakerService();
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
-
-router.get("/sound/:filename", playSound);
 router.get("sound/pwm", pwmTest);
+router.get("/sound/:filename", playSound);
+
 
 function playSound(req, res, next){
   let filename = req.params.filename;
