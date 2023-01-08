@@ -11,11 +11,13 @@ export default class SpeakerService {
             sampleRate: 44100     // 44,100 Hz sample rate
         });
         this.context      = new audioApi.AudioContext();
-        this.context.outStream = new Speaker({
-            channels:   this.context.format.numberOfChannels,
-            bitDepth:   this.context.format.bitDepth,
-            sampleRate: this.context.format.sampleRate
-        });
+        this.audio = new WritableStream();
+        this.context.outStream = this.audio;
+        // this.context.outStream = new Speaker({
+        //     channels:   this.context.format.numberOfChannels,
+        //     bitDepth:   this.context.format.bitDepth,
+        //     sampleRate: this.context.format.sampleRate
+        // });
     }
     async playSound(filename){
         let self = this;
@@ -34,11 +36,12 @@ export default class SpeakerService {
         bufferSource.buffer = audioBuffer;
         bufferSource.loop   = false;
         bufferSource.start(0);
+        this.playPwmStream();
     }
 
     async playPwmTest(){
 
-        var pin = 12;           /* P12/GPIO18 */
+        var pin = 32;           /* P12/GPIO18 */
         var range = 1024;       /* LEDs can quickly hit max brightness, so only use */
         var max = 128;          /*   the bottom 8th of a larger scale */
         var clockdiv = 8;       /* Clock divider (PWM refresh rate), 8 == 2.4MHz */
@@ -72,6 +75,27 @@ export default class SpeakerService {
             data += direction;
         }, interval, data, direction, times);
 
+    }
+
+    async playPwmStream(){
+        let self = this;
+
+        var pin = 32;           /* P12/GPIO18 */
+        var range = 1024;       /* LEDs can quickly hit max brightness, so only use */
+        var max = 128;          /*   the bottom 8th of a larger scale */
+        var clockdiv = 8;       /* Clock divider (PWM refresh rate), 8 == 2.4MHz */
+        var interval = 5;       /* setInterval timer, speed of pulses */
+
+        /*
+         * Enable PWM on the chosen pin and set the clock and range.
+         */
+        rpio.open(pin, rpio.PWM);
+        rpio.pwmSetClockDivider(clockdiv);
+        rpio.pwmSetRange(pin, range);
+
+        var pulse = setInterval(function() {
+            rpio.pwmSetData(pin, self.audio);
+        }, interval);
     }
 }
 
