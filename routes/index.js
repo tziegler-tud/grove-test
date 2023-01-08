@@ -10,7 +10,9 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 router.get("/sound/pwm", pwmTest);
-router.get("/sound/:filename", playSound);
+router.get("/sound/pwm/:filename", playSound);
+router.get("/sound/:filename", playPwmStream());
+
 
 
 function playSound(req, res, next){
@@ -25,6 +27,17 @@ function playSound(req, res, next){
 }
 function pwmTest(req, res, next){
     speaker.playPwmTest()
+        .then(function(result){
+            res.send(200)
+        })
+        .catch(function(err){
+            next(err);
+        });
+}
+
+function playPwmStream(){
+    let filename = req.params.filename;
+    speaker.playPwmStream(filename)
         .then(function(result){
             res.send(200)
         })

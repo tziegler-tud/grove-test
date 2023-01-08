@@ -24,6 +24,12 @@ export default class SpeakerService {
         let track = './audio/'+ filename;
         var audioData1 = fs.readFileSync(track);
 
+        this.context.outStream = new Speaker({
+            channels:   this.context.format.numberOfChannels,
+            bitDepth:   this.context.format.bitDepth,
+            sampleRate: this.context.format.sampleRate
+        });
+
         this.context.decodeAudioData(audioData1, function(audioBuffer) {
             self.play(audioBuffer)
         });
@@ -36,8 +42,8 @@ export default class SpeakerService {
         bufferSource.buffer = audioBuffer;
         bufferSource.loop   = false;
         bufferSource.start(0);
-        this.playPwmStream();
     }
+
 
     async playPwmTest(){
 
@@ -45,7 +51,7 @@ export default class SpeakerService {
         var range = 1024;       /* LEDs can quickly hit max brightness, so only use */
         var max = 128;          /*   the bottom 8th of a larger scale */
         var clockdiv = 8;       /* Clock divider (PWM refresh rate), 8 == 2.4MHz */
-        var interval = 5;       /* setInterval timer, speed of pulses */
+        var interval = 100;       /* setInterval timer, speed of pulses */
         var times = 5;          /* How many times to pulse before exiting */
 
         /*
@@ -60,8 +66,11 @@ export default class SpeakerService {
          */
         var direction = 1;
         var data = 0;
+        var frequency = clockdiv;
+        var mult = 2;
         var pulse = setInterval(function() {
             rpio.pwmSetData(pin, data);
+            rpio.pwmSetClockDivider(frequency);
             if (data === 0) {
                 direction = 1;
                 if (times-- === 0) {
@@ -72,17 +81,42 @@ export default class SpeakerService {
             } else if (data === max) {
                 direction = -1;
             }
+            if(frequency > 2048){
+                mult = -2;
+            }
+            if(frequency < 16) {
+                mult = 2;
+            }
+            frequency = frequency * mult;
             data += direction;
-        }, interval, data, direction, times);
+        }, interval, data, direction, times, frequency, mult);
 
     }
 
-    async playPwmStream(){
+    async playPwmStream(filename){
         let self = this;
+
+        let track = './audio/'+ filename;
+        var audioData1 = fs.readFileSync(track);
+
+        this.context.outStream = this.audio;
+
+        this.context.decodeAudioData(audioData1, function(audioBuffer) {
+            self.playPwm(audioBuffer)
+        });
+    }
+
+    playPwm(audioBuffer){
+
+        if (!audioBuffer) { return; }
+        var bufferSource = this.context.createBufferSource();
+        bufferSource.connect(this.context.destination);
+        bufferSource.buffer = audioBuffer;
+        bufferSource.loop   = false;
+        bufferSource.start(0);
 
         var pin = 32;           /* P12/GPIO18 */
         var range = 1024;       /* LEDs can quickly hit max brightness, so only use */
-        var max = 128;          /*   the bottom 8th of a larger scale */
         var clockdiv = 8;       /* Clock divider (PWM refresh rate), 8 == 2.4MHz */
         var interval = 5;       /* setInterval timer, speed of pulses */
 
@@ -95,7 +129,9 @@ export default class SpeakerService {
 
         var pulse = setInterval(function() {
             rpio.pwmSetData(pin, self.audio);
+            console.log(self.audio);
         }, interval);
+
     }
 }
 
