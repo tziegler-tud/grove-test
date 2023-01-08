@@ -11,6 +11,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get("/sound/:filename", playSound);
+router.get("sound/pwm", pwmTest);
 
 function playSound(req, res, next){
   let filename = req.params.filename;
@@ -22,6 +23,16 @@ function playSound(req, res, next){
         next(err);
       });
 }
+function pwmTest(req, res, next){
+    speaker.playPwmTest()
+        .then(function(result){
+            res.send(200)
+        })
+        .catch(function(err){
+            next(err);
+        });
+}
+
 
 
 export default router
