@@ -47,6 +47,8 @@ export default class SpeakerService {
 
     async playPwmTest(){
 
+        console.log("playing pwm test");
+
         var pin = 32;           /* P12/GPIO18 */
         var range = 1024;       /* LEDs can quickly hit max brightness, so only use */
         var max = 128;          /*   the bottom 8th of a larger scale */
