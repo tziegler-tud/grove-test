@@ -20,6 +20,7 @@ export default class SpeakerService {
         // });
     }
     async playSound(filename){
+        console.log("playing sound "+ filename);
         let self = this;
         let track = './audio/'+ filename;
         var audioData1 = fs.readFileSync(track);
