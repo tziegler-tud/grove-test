@@ -11,7 +11,7 @@ router.get('/', function(req, res, next) {
 });
 router.get("/sound/pwm", pwmTest);
 router.get("/sound/pwm/:filename", playSound);
-router.get("/sound/:filename", playPwmStream());
+router.get("/sound/:filename", playPwmStream);
 
 
 
@@ -35,7 +35,7 @@ function pwmTest(req, res, next){
         });
 }
 
-function playPwmStream(){
+function playPwmStream(req, res, next){
     let filename = req.params.filename;
     speaker.playPwmStream(filename)
         .then(function(result){
